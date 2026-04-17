@@ -135,21 +135,31 @@ tr:hover td { background: #f9fafb; }
 
 <script>
 ZOHO.CREATOR.init().then(function() {
-    var appName = "zoho-mex";
-
     var config = {
-        appName: appName,
-        reportName: "Offer_Sheet_Report",
+        appName: "zoho-mex",
+        reportName: "All_Offer_Sheets",
         page: 1,
         pageSize: 200
     };
 
     ZOHO.CREATOR.API.getAllRecords(config).then(function(response) {
         var records = response.data || [];
+        if (records.length === 0 && response.code) {
+            document.getElementById("app").innerHTML = '<div style="padding:40px;color:#ef4444;font-size:14px;">Error: ' + JSON.stringify(response) + '<br><br>Trying alternate report name...</div>';
+            var config2 = {
+                appName: "zoho-mex",
+                reportName: "Offer_Sheet_Report",
+                page: 1,
+                pageSize: 200
+            };
+            return ZOHO.CREATOR.API.getAllRecords(config2);
+        }
+        return response;
+    }).then(function(response) {
+        var records = response.data || [];
         renderDashboard(records);
     }).catch(function(err) {
-        console.error("Error fetching records:", err);
-        renderDashboard([]);
+        document.getElementById("app").innerHTML = '<div style="padding:40px;color:#ef4444;font-size:14px;">Error loading data: ' + JSON.stringify(err) + '</div>';
     });
 });
 
