@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JERA MODA - Offer View / 오퍼현황</title>
+<script src="https://js.zohostatic.com/creator/widgets/1.0.0/sdk.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; background: #f5f6fa; color: #333; }
+
+  .header { display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; background: #fff; border-bottom: 1px solid #e8e8e8; }
+  .header-left { display: flex; align-items: center; gap: 10px; }
+  .header-badge { background: #f79009; color: #fff; font-weight: 800; font-size: 13px; padding: 4px 10px; border-radius: 6px; }
+  .header-title { font-size: 18px; font-weight: 700; }
+  .btn { padding: 8px 16px; border-radius: 8px; border: 1px solid #d0d5dd; background: #fff; font-size: 13px; font-weight: 600; cursor: pointer; }
+  .btn:hover { background: #f5f5f5; }
+  .btn-primary { background: #5b5fc7; color: #fff; border-color: #5b5fc7; }
+
+  .dashboard { padding: 20px 24px; }
+  .row { display: grid; gap: 16px; margin-bottom: 16px; }
+  .row-4 { grid-template-columns: repeat(4, 1fr); }
+  .row-3 { grid-template-columns: repeat(3, 1fr); }
+  .row-2 { grid-template-columns: repeat(2, 1fr); }
+
+  .card { background: #fff; border-radius: 12px; border: 1px solid #e8e8e8; padding: 20px; }
+  .card-title { font-size: 13px; font-weight: 700; color: #555; margin-bottom: 14px; display: flex; align-items: center; gap: 6px; }
+
+  /* BUYER CARDS */
+  .buyer-card { background: #fff; border: 2px solid #e8e8e8; border-radius: 12px; padding: 16px; transition: border-color 0.15s; }
+  .buyer-card:hover { border-color: #5b5fc7; }
+  .buyer-name { font-size: 14px; font-weight: 700; color: #222; margin-bottom: 10px; }
+  .buyer-tag { font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: 600; background: #eff8ff; color: #175cd3; }
+  .buyer-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
+  .b-stat { text-align: center; padding: 8px 4px; background: #fafbff; border-radius: 8px; }
+  .b-stat .num { font-size: 18px; font-weight: 800; }
+  .b-stat .num.green { color: #12b76a; }
+  .b-stat .num.orange { color: #f79009; }
+  .b-stat .num.blue { color: #2e90fa; }
+  .b-stat .lbl { font-size: 9px; color: #888; margin-top: 2px; }
+
+  /* OFFER TABLE */
+  .tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .tbl th { text-align: left; padding: 10px 12px; background: #f9fafb; color: #667085; font-weight: 600; font-size: 11px; text-transform: uppercase; border-bottom: 1px solid #eaecf0; position: sticky; top: 0; }
+  .tbl td { padding: 10px 12px; border-bottom: 1px solid #f2f4f7; }
+  .tbl tr:hover td { background: #f9fafb; }
+  .tbl-wrap { max-height: 450px; overflow-y: auto; border: 1px solid #eaecf0; border-radius: 8px; }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .badge { display: inline-block; padding: 2px 10px; border-radius: 16px; font-size: 11px; font-weight: 600; }
+  .badge-green { background: #ecfdf3; color: #027a48; }
+  .badge-blue { background: #eff8ff; color: #175cd3; }
+  .badge-orange { background: #fffaeb; color: #b54708; }
+  .badge-red { background: #fef3f2; color: #b42318; }
+  .badge-gray { background: #f2f4f7; color: #344054; }
+  .badge-purple { background: #f4f3ff; color: #5925dc; }
+
+  .filters { display: flex; gap: 10px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
+  .filter-input { padding: 8px 12px; border: 1px solid #d0d5dd; border-radius: 8px; font-size: 13px; min-width: 200px; }
+  .filter-select { padding: 8px 12px; border: 1px solid #d0d5dd; border-radius: 8px; font-size: 13px; background: #fff; }
+  .filter-count { font-size: 13px; color: #667085; margin-left: auto; }
+
+  /* RING */
+  .ring-wrap { position: relative; flex-shrink: 0; }
+  .ring-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; }
+  .ring-center .pct { font-size: 18px; font-weight: 800; }
+
+  @media (max-width: 1200px) { .row-4 { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 768px) { .row-4, .row-3, .row-2 { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <span class="header-badge">OF</span>
+    <span class="header-title">오퍼 현황 / Offer View</span>
+  </div>
+  <div style="display:flex;gap:8px;">
+    <button class="btn" onclick="location.reload()">Refresh</button>
+    <button class="btn btn-primary" onclick="newOffer()">+ New Offer</button>
+  </div>
+</div>
+
+<div class="dashboard">
+
+  <!-- KPI Row -->
+  <div class="row row-4">
+    <div class="card" style="text-align:center;">
+      <div style="font-size:11px;color:#888;margin-bottom:6px;">총 오퍼 / Total Offers</div>
+      <div style="font-size:32px;font-weight:800;color:#5b5fc7;" id="kpi-total">—</div>
+    </div>
+    <div class="card" style="text-align:center;">
+      <div style="font-size:11px;color:#888;margin-bottom:6px;">확정 / Confirmed</div>
+      <div style="font-size:32px;font-weight:800;color:#12b76a;" id="kpi-confirmed">—</div>
+    </div>
+    <div class="card" style="text-align:center;">
+      <div style="font-size:11px;color:#888;margin-bottom:6px;">대기 / Pending</div>
+      <div style="font-size:32px;font-weight:800;color:#f79009;" id="kpi-pending">—</div>
+    </div>
+    <div class="card" style="text-align:center;">
+      <div style="font-size:11px;color:#888;margin-bottom:6px;">임시저장 / Draft</div>
+      <div style="font-size:32px;font-weight:800;color:#667085;" id="kpi-draft">—</div>
+    </div>
+  </div>
+
+  <!-- Buyer Summary -->
+  <div class="card">
+    <div class="card-title"><span>👥</span> 바이어별 현황 / By Buyer</div>
+    <div class="row row-4" id="buyer-grid">
+      <!-- filled by JS -->
+    </div>
+  </div>
+
+  <!-- Offers Table -->
+  <div class="card" style="margin-top:16px;">
+    <div class="card-title"><span>📋</span> 오퍼 목록 / Offer List</div>
+    <div class="filters">
+      <input type="text" class="filter-input" id="search-input" placeholder="🔍 오퍼번호, 바이어, 품목 검색..." oninput="filterOffers()">
+      <select class="filter-select" id="filter-buyer" onchange="filterOffers()"><option value="">All Buyers</option></select>
+      <select class="filter-select" id="filter-status" onchange="filterOffers()">
+        <option value="">All Status</option>
+        <option value="Confirmed">Confirmed</option>
+        <option value="Pending">Pending</option>
+        <option value="Draft">Draft</option>
+        <option value="Closed">Closed</option>
+      </select>
+      <select class="filter-select" id="filter-month" onchange="filterOffers()">
+        <option value="">All Months</option>
+        <option value="2026-04">4월 Apr</option>
+        <option value="2026-03">3월 Mar</option>
+        <option value="2026-02">2월 Feb</option>
+        <option value="2026-01">1월 Jan</option>
+      </select>
+      <span class="filter-count" id="filter-count"></span>
+    </div>
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th>Offer #</th>
+            <th>Date</th>
+            <th>Buyer</th>
+            <th>Items</th>
+            <th style="text-align:right">Total Qty</th>
+            <th style="text-align:right">Amount (MXN)</th>
+            <th>Status</th>
+            <th>Category</th>
+          </tr>
+        </thead>
+        <tbody id="offers-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const IS_ZOHO = (typeof ZOHO !== 'undefined');
+
+// Sample buyers
+const BUYERS = [
+  { name: 'Buyer A', tag: 'Main', confirmed: 142, pending: 3, draft: 2, closed: 89 },
+  { name: 'Buyer B', tag: 'Main', confirmed: 118, pending: 1, draft: 1, closed: 72 },
+  { name: 'Buyer C', tag: '', confirmed: 45, pending: 2, draft: 0, closed: 28 },
+  { name: 'Buyer D', tag: '', confirmed: 38, pending: 0, draft: 1, closed: 22 },
+  { name: 'Buyer E', tag: '', confirmed: 32, pending: 1, draft: 0, closed: 18 },
+  { name: 'Buyer F', tag: '', confirmed: 28, pending: 0, draft: 0, closed: 15 },
+  { name: 'Buyer G', tag: '', confirmed: 22, pending: 1, draft: 0, closed: 12 },
+  { name: 'Buyer H', tag: '', confirmed: 18, pending: 0, draft: 0, closed: 9 },
+];
+
+const SAMPLE_OFFERS = [];
+const statuses = ['Confirmed', 'Confirmed', 'Confirmed', 'Pending', 'Draft', 'Closed'];
+const cats = ['SWTOP', 'SWBOT', 'SMTOP', 'SMBOT', 'SPORT', 'ETC', 'SPL', 'HD'];
+for (let i = 1; i <= 30; i++) {
+  const buyer = BUYERS[i % BUYERS.length];
+  const month = i <= 10 ? '01' : i <= 20 ? '02' : i <= 25 ? '03' : '04';
+  SAMPLE_OFFERS.push({
+    id: `OF-2026-${String(i).padStart(4, '0')}`,
+    date: `2026-${month}-${String((i % 28) + 1).padStart(2, '0')}`,
+    buyer: buyer.name,
+    items: Math.floor(Math.random() * 15) + 1,
+    qty: Math.floor(Math.random() * 5000) + 200,
+    amount: Math.floor(Math.random() * 500000) + 10000,
+    status: statuses[i % statuses.length],
+    category: cats[i % cats.length]
+  });
+}
+
+let allOffers = [];
+
+async function init() {
+  if (IS_ZOHO) {
+    try {
+      await ZOHO.CREATOR.init();
+      allOffers = await fetchOffers();
+    } catch(e) {
+      allOffers = SAMPLE_OFFERS;
+    }
+  } else {
+    allOffers = SAMPLE_OFFERS;
+  }
+  renderKPIs();
+  renderBuyerCards();
+  populateFilters();
+  filterOffers();
+}
+
+async function fetchOffers() {
+  try {
+    const resp = await ZOHO.CREATOR.UTIL.invokeURL({
+      url: 'https://www.zohoapis.com/inventory/v1/salesorders?organization_id=908736065&per_page=200&sort_column=date&sort_order=D',
+      type: 'GET',
+      connectionLinkName: 'inventory_connection'
+    });
+    if (resp && resp.salesorders) {
+      return resp.salesorders.map(so => ({
+        id: so.salesorder_number,
+        date: so.date,
+        buyer: so.customer_name,
+        items: (so.line_items || []).length,
+        qty: (so.line_items || []).reduce((s, li) => s + (li.quantity || 0), 0),
+        amount: so.total || 0,
+        status: so.status === 'confirmed' ? 'Confirmed' : so.status === 'draft' ? 'Draft' : so.status === 'closed' ? 'Closed' : 'Pending',
+        category: ''
+      }));
+    }
+  } catch(e) { console.warn('Fetch failed', e); }
+  return SAMPLE_OFFERS;
+}
+
+function renderKPIs() {
+  const confirmed = allOffers.filter(o => o.status === 'Confirmed').length;
+  const pending = allOffers.filter(o => o.status === 'Pending').length;
+  const draft = allOffers.filter(o => o.status === 'Draft').length;
+  document.getElementById('kpi-total').textContent = allOffers.length.toLocaleString();
+  document.getElementById('kpi-confirmed').textContent = confirmed.toLocaleString();
+  document.getElementById('kpi-pending').textContent = pending.toLocaleString();
+  document.getElementById('kpi-draft').textContent = draft.toLocaleString();
+}
+
+function renderBuyerCards() {
+  const grid = document.getElementById('buyer-grid');
+  grid.innerHTML = BUYERS.slice(0, 8).map(b => `
+    <div class="buyer-card">
+      <div style="display:flex;align-items:center;gap:6px;">
+        <span class="buyer-name">${b.name}</span>
+        ${b.tag ? `<span class="buyer-tag">${b.tag}</span>` : ''}
+      </div>
+      <div class="buyer-stats">
+        <div class="b-stat"><div class="num green">${b.confirmed}</div><div class="lbl">확정<br>Confirmed</div></div>
+        <div class="b-stat"><div class="num orange">${b.pending}</div><div class="lbl">대기<br>Pending</div></div>
+        <div class="b-stat"><div class="num blue">${b.draft}</div><div class="lbl">임시<br>Draft</div></div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function populateFilters() {
+  const sel = document.getElementById('filter-buyer');
+  const buyers = [...new Set(allOffers.map(o => o.buyer))].sort();
+  buyers.forEach(b => { const opt = document.createElement('option'); opt.value = b; opt.textContent = b; sel.appendChild(opt); });
+}
+
+function filterOffers() {
+  const search = document.getElementById('search-input').value.toLowerCase();
+  const buyer = document.getElementById('filter-buyer').value;
+  const status = document.getElementById('filter-status').value;
+  const month = document.getElementById('filter-month').value;
+
+  const filtered = allOffers.filter(o => {
+    if (search && !o.id.toLowerCase().includes(search) && !o.buyer.toLowerCase().includes(search)) return false;
+    if (buyer && o.buyer !== buyer) return false;
+    if (status && o.status !== status) return false;
+    if (month && !o.date.startsWith(month)) return false;
+    return true;
+  });
+
+  document.getElementById('filter-count').textContent = `${filtered.length} offers`;
+
+  const tbody = document.getElementById('offers-tbody');
+  tbody.innerHTML = filtered.map(o => {
+    const sc = o.status === 'Confirmed' ? 'badge-green' : o.status === 'Pending' ? 'badge-orange' : o.status === 'Draft' ? 'badge-gray' : 'badge-blue';
+    return `<tr>
+      <td><strong>${o.id}</strong></td>
+      <td>${o.date}</td>
+      <td>${o.buyer}</td>
+      <td class="num">${o.items}</td>
+      <td class="num">${o.qty.toLocaleString()}</td>
+      <td class="num">$${o.amount.toLocaleString()}</td>
+      <td><span class="badge ${sc}">${o.status}</span></td>
+      <td>${o.category}</td>
+    </tr>`;
+  }).join('');
+}
+
+function newOffer() {
+  if (IS_ZOHO) {
+    ZOHO.CREATOR.UTIL.navigateParentURL('/inventory#/salesorders/new');
+  } else {
+    alert('New Offer: This button opens the Zoho Inventory Sales Order form when running inside Creator.');
+  }
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>

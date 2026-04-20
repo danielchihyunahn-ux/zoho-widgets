@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JERA MODA - Sales View / 매출현황</title>
+<script src="https://js.zohostatic.com/creator/widgets/1.0.0/sdk.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; background: #f5f6fa; color: #333; }
+
+  .header { display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; background: #fff; border-bottom: 1px solid #e8e8e8; }
+  .header-left { display: flex; align-items: center; gap: 10px; }
+  .header-badge { background: #7a5af8; color: #fff; font-weight: 800; font-size: 13px; padding: 4px 10px; border-radius: 6px; }
+  .header-title { font-size: 18px; font-weight: 700; }
+  .btn { padding: 8px 16px; border-radius: 8px; border: 1px solid #d0d5dd; background: #fff; font-size: 13px; font-weight: 600; cursor: pointer; }
+
+  .dashboard { padding: 20px 24px; }
+  .row { display: grid; gap: 16px; margin-bottom: 16px; }
+  .row-4 { grid-template-columns: repeat(4, 1fr); }
+  .row-3 { grid-template-columns: repeat(3, 1fr); }
+  .row-2 { grid-template-columns: repeat(2, 1fr); }
+
+  .card { background: #fff; border-radius: 12px; border: 1px solid #e8e8e8; padding: 20px; }
+  .card-title { font-size: 13px; font-weight: 700; color: #555; margin-bottom: 14px; display: flex; align-items: center; gap: 6px; }
+
+  /* KPI */
+  .kpi-big { text-align: center; }
+  .kpi-big .num { font-size: 30px; font-weight: 800; }
+  .kpi-big .num.purple { color: #7a5af8; }
+  .kpi-big .num.green { color: #12b76a; }
+  .kpi-big .num.blue { color: #2e90fa; }
+  .kpi-big .num.orange { color: #f79009; }
+  .kpi-big .lbl { font-size: 11px; color: #888; margin-top: 4px; }
+
+  /* PIVOT TABLE */
+  .pivot { border: 1px solid #eaecf0; border-radius: 8px; overflow: hidden; }
+  .pivot table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .pivot th { padding: 10px 12px; background: #f9fafb; color: #667085; font-weight: 600; font-size: 11px; text-transform: uppercase; border-bottom: 1px solid #eaecf0; text-align: right; }
+  .pivot th:first-child { text-align: left; }
+  .pivot td { padding: 10px 12px; border-bottom: 1px solid #f2f4f7; text-align: right; font-variant-numeric: tabular-nums; }
+  .pivot td:first-child { text-align: left; font-weight: 600; }
+  .pivot tr:hover td { background: #f9fafb; }
+  .pivot tr.total-row td { background: #f0f1ff; font-weight: 800; color: #5b5fc7; border-top: 2px solid #5b5fc7; }
+
+  /* CHART */
+  .chart-wrap { position: relative; height: 280px; }
+
+  /* TOP ITEMS */
+  .top-item { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f2f4f7; }
+  .top-item:last-child { border: none; }
+  .top-rank { width: 24px; height: 24px; border-radius: 50%; background: #f0f1ff; color: #5b5fc7; font-size: 11px; font-weight: 800; display: flex; align-items: center; justify-content: center; margin-right: 10px; }
+  .top-name { flex: 1; font-size: 13px; font-weight: 600; }
+  .top-val { font-size: 13px; font-weight: 700; color: #5b5fc7; font-variant-numeric: tabular-nums; }
+
+  .badge { display: inline-block; padding: 2px 10px; border-radius: 16px; font-size: 11px; font-weight: 600; }
+  .badge-green { background: #ecfdf3; color: #027a48; }
+  .badge-orange { background: #fffaeb; color: #b54708; }
+
+  @media (max-width: 1200px) { .row-4 { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 768px) { .row-4, .row-3, .row-2 { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <span class="header-badge">SA</span>
+    <span class="header-title">매출 현황 / Sales View</span>
+    <span style="font-size:13px;color:#888;">10,220 Sales Orders</span>
+  </div>
+  <div><button class="btn" onclick="location.reload()">Refresh</button></div>
+</div>
+
+<div class="dashboard">
+
+  <!-- KPI Row -->
+  <div class="row row-4">
+    <div class="card kpi-big">
+      <div class="num purple">10,220</div>
+      <div class="lbl">총 주문 / Total Orders</div>
+    </div>
+    <div class="card kpi-big">
+      <div class="num green">31</div>
+      <div class="lbl">고객수 / Customers</div>
+    </div>
+    <div class="card kpi-big">
+      <div class="num blue">7</div>
+      <div class="lbl">운송업체 / Carriers</div>
+    </div>
+    <div class="card kpi-big">
+      <div class="num orange">MXN</div>
+      <div class="lbl">기본통화 / Currency</div>
+    </div>
+  </div>
+
+  <!-- Sales Trend Chart + Top Items -->
+  <div class="row row-2">
+    <div class="card">
+      <div class="card-title"><span>📈</span> 월별 매출 추이 / Monthly Sales Trend</div>
+      <div class="chart-wrap"><canvas id="chart-trend"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span>🏆</span> 매출 Top 10 품목 / Top Selling Items</div>
+      <div id="top-items"></div>
+    </div>
+  </div>
+
+  <!-- Buyer x Month Pivot -->
+  <div class="card">
+    <div class="card-title"><span>📊</span> 바이어별 월간 매출 / Sales by Customer x Month (MXN)</div>
+    <div class="pivot">
+      <table>
+        <thead>
+          <tr><th>Customer / 고객</th><th>1월 Jan</th><th>2월 Feb</th><th>3월 Mar</th><th>4월 Apr</th><th>Total</th></tr>
+        </thead>
+        <tbody id="pivot-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Carrier Utilization -->
+  <div class="row row-2">
+    <div class="card">
+      <div class="card-title"><span>🚚</span> 운송업체별 출하 / Shipments by Carrier</div>
+      <div class="chart-wrap"><canvas id="chart-carriers"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span>📦</span> 카테고리별 매출 / Sales by Category</div>
+      <div class="chart-wrap"><canvas id="chart-categories"></canvas></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const SAMPLE_PIVOT = [
+  { name: 'Buyer A', tag: 'Main', m1: 245000, m2: 312000, m3: 289000, m4: 198000 },
+  { name: 'Buyer B', tag: 'Main', m1: 189000, m2: 221000, m3: 205000, m4: 176000 },
+  { name: 'Buyer C', tag: '',     m1: 45000,  m2: 67000,  m3: 52000,  m4: 41000 },
+  { name: 'Buyer D', tag: '',     m1: 38000,  m2: 42000,  m3: 55000,  m4: 33000 },
+  { name: 'Buyer E', tag: '',     m1: 32000,  m2: 28000,  m3: 41000,  m4: 29000 },
+  { name: 'Buyer F', tag: '',     m1: 22000,  m2: 31000,  m3: 26000,  m4: 18000 },
+  { name: 'Buyer G', tag: '',     m1: 18000,  m2: 22000,  m3: 19000,  m4: 15000 },
+  { name: 'Buyer H', tag: '',     m1: 12000,  m2: 15000,  m3: 14000,  m4: 11000 },
+];
+
+const TOP_ITEMS = [
+  { name: 'BIG5-1', qty: 45000 }, { name: 'N101', qty: 32000 }, { name: 'KIM1', qty: 28000 },
+  { name: 'STK3', qty: 18500 }, { name: 'SUM18', qty: 15300 }, { name: 'BL101', qty: 12400 },
+  { name: 'WT22', qty: 11200 }, { name: 'ENTOP5', qty: 9200 }, { name: 'HD50', qty: 8900 },
+  { name: 'CRC205', qty: 8750 },
+];
+
+const CARRIERS = [
+  { name: 'OMAJA', count: 3200 }, { name: '24 HORAS', count: 2800 }, { name: 'MALDONADO', count: 1500 },
+  { name: 'FLETES REGRESO', count: 1200 }, { name: 'VARIAS', count: 800 }, { name: 'TEPA', count: 520 },
+  { name: 'MUESTRAS', count: 200 },
+];
+
+function init() {
+  renderPivot();
+  renderTopItems();
+  renderTrendChart();
+  renderCarrierChart();
+  renderCategoryChart();
+}
+
+function renderPivot() {
+  const tbody = document.getElementById('pivot-body');
+  let t1=0, t2=0, t3=0, t4=0;
+  let html = SAMPLE_PIVOT.map(b => {
+    const total = b.m1 + b.m2 + b.m3 + b.m4;
+    t1+=b.m1; t2+=b.m2; t3+=b.m3; t4+=b.m4;
+    return `<tr>
+      <td>${b.name} ${b.tag ? '<span class="badge badge-green">'+b.tag+'</span>' : ''}</td>
+      <td>$${(b.m1/1000).toFixed(0)}K</td>
+      <td>$${(b.m2/1000).toFixed(0)}K</td>
+      <td>$${(b.m3/1000).toFixed(0)}K</td>
+      <td>$${(b.m4/1000).toFixed(0)}K</td>
+      <td style="font-weight:700;color:#5b5fc7">$${(total/1000).toFixed(0)}K</td>
+    </tr>`;
+  }).join('');
+  const grandTotal = t1+t2+t3+t4;
+  html += `<tr class="total-row">
+    <td>TOTAL</td>
+    <td>$${(t1/1000).toFixed(0)}K</td>
+    <td>$${(t2/1000).toFixed(0)}K</td>
+    <td>$${(t3/1000).toFixed(0)}K</td>
+    <td>$${(t4/1000).toFixed(0)}K</td>
+    <td>$${(grandTotal/1000).toFixed(0)}K</td>
+  </tr>`;
+  tbody.innerHTML = html;
+}
+
+function renderTopItems() {
+  const container = document.getElementById('top-items');
+  container.innerHTML = TOP_ITEMS.map((item, i) => `
+    <div class="top-item">
+      <span class="top-rank">${i+1}</span>
+      <span class="top-name">${item.name}</span>
+      <span class="top-val">${item.qty.toLocaleString()} pcs</span>
+    </div>
+  `).join('');
+}
+
+function renderTrendChart() {
+  new Chart(document.getElementById('chart-trend'), {
+    type: 'bar',
+    data: {
+      labels: ['1월 Jan', '2월 Feb', '3월 Mar', '4월 Apr'],
+      datasets: [{
+        label: 'Sales (MXN)',
+        data: [601000, 738000, 701000, 521000],
+        backgroundColor: '#5b5fc7',
+        borderRadius: 6
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { ticks: { callback: v => '$' + (v/1000) + 'K' }, grid: { color: '#f2f4f7' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+}
+
+function renderCarrierChart() {
+  new Chart(document.getElementById('chart-carriers'), {
+    type: 'bar',
+    data: {
+      labels: CARRIERS.map(c => c.name),
+      datasets: [{
+        label: 'Shipments',
+        data: CARRIERS.map(c => c.count),
+        backgroundColor: ['#5b5fc7', '#7c80e0', '#2e90fa', '#12b76a', '#f79009', '#f04438', '#667085'],
+        borderRadius: 6
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: { x: { grid: { color: '#f2f4f7' } }, y: { grid: { display: false } } }
+    }
+  });
+}
+
+function renderCategoryChart() {
+  const cats = ['SWTOP','SWBOT','ETC','SMTOP','SMBOT','SPORT','SPL','HD'];
+  const vals = [28, 22, 18, 10, 6, 5, 4, 7];
+  new Chart(document.getElementById('chart-categories'), {
+    type: 'doughnut',
+    data: {
+      labels: cats,
+      datasets: [{ data: vals, backgroundColor: ['#5b5fc7','#7c80e0','#f79009','#2e90fa','#36bffa','#12b76a','#f04438','#7a5af8'], borderWidth: 0 }]
+    },
+    options: {
+      cutout: '55%',
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'right', labels: { boxWidth: 12, padding: 8, font: { size: 11 } } } }
+    }
+  });
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>

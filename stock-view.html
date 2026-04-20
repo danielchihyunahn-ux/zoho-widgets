@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JERA MODA - Stock View / 재고현황</title>
+<script src="https://js.zohostatic.com/creator/widgets/1.0.0/sdk.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; background: #f5f6fa; color: #333; }
+
+  .header { display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; background: #fff; border-bottom: 1px solid #e8e8e8; }
+  .header-left { display: flex; align-items: center; gap: 10px; }
+  .header-badge { background: #12b76a; color: #fff; font-weight: 800; font-size: 13px; padding: 4px 10px; border-radius: 6px; }
+  .header-title { font-size: 18px; font-weight: 700; color: #222; }
+  .btn { padding: 8px 16px; border-radius: 8px; border: 1px solid #d0d5dd; background: #fff; font-size: 13px; font-weight: 600; cursor: pointer; }
+  .btn:hover { background: #f5f5f5; }
+
+  .dashboard { padding: 20px 24px; }
+  .row { display: grid; gap: 16px; margin-bottom: 16px; }
+  .row-4 { grid-template-columns: repeat(4, 1fr); }
+  .row-3 { grid-template-columns: repeat(3, 1fr); }
+  .row-2 { grid-template-columns: repeat(2, 1fr); }
+
+  .card { background: #fff; border-radius: 12px; border: 1px solid #e8e8e8; padding: 20px; }
+  .card-title { font-size: 13px; font-weight: 700; color: #555; margin-bottom: 14px; display: flex; align-items: center; gap: 6px; }
+
+  /* GROUP CHIPS */
+  .group-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
+  .group-chip { background: #fafbff; border: 1px solid #eef0f8; border-radius: 10px; padding: 14px 10px; text-align: center; cursor: pointer; transition: all 0.15s; }
+  .group-chip:hover { border-color: #5b5fc7; background: #f0f1ff; }
+  .group-chip.active { border-color: #5b5fc7; background: #f0f1ff; box-shadow: 0 0 0 2px rgba(91,95,199,0.15); }
+  .group-chip .g-name { font-size: 14px; font-weight: 800; color: #5b5fc7; }
+  .group-chip .g-count { font-size: 22px; font-weight: 800; color: #222; margin: 4px 0; }
+  .group-chip .g-label { font-size: 10px; color: #888; }
+
+  /* FILTERS */
+  .filters { display: flex; gap: 10px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
+  .filter-input { padding: 8px 12px; border: 1px solid #d0d5dd; border-radius: 8px; font-size: 13px; min-width: 220px; }
+  .filter-select { padding: 8px 12px; border: 1px solid #d0d5dd; border-radius: 8px; font-size: 13px; background: #fff; }
+  .filter-count { font-size: 13px; color: #667085; margin-left: auto; }
+
+  /* TABLE */
+  .tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .tbl th { text-align: left; padding: 10px 12px; background: #f9fafb; color: #667085; font-weight: 600; font-size: 11px; text-transform: uppercase; border-bottom: 1px solid #eaecf0; position: sticky; top: 0; z-index: 1; }
+  .tbl td { padding: 10px 12px; border-bottom: 1px solid #f2f4f7; }
+  .tbl tr:hover td { background: #f9fafb; }
+  .tbl-wrap { max-height: 500px; overflow-y: auto; border: 1px solid #eaecf0; border-radius: 8px; }
+  .badge { display: inline-block; padding: 2px 10px; border-radius: 16px; font-size: 11px; font-weight: 600; }
+  .badge-green { background: #ecfdf3; color: #027a48; }
+  .badge-orange { background: #fffaeb; color: #b54708; }
+  .badge-gray { background: #f2f4f7; color: #344054; }
+  .badge-red { background: #fef3f2; color: #b42318; }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; }
+
+  /* RING */
+  .ring-card { display: flex; align-items: center; gap: 16px; }
+  .ring-wrap { position: relative; flex-shrink: 0; }
+  .ring-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; }
+  .ring-center .pct { font-size: 20px; font-weight: 800; }
+  .ring-center .pct-label { font-size: 9px; color: #888; }
+  .ring-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; flex: 1; }
+  .ring-stat .num { font-size: 20px; font-weight: 800; }
+  .ring-stat .num.green { color: #12b76a; }
+  .ring-stat .num.orange { color: #f79009; }
+  .ring-stat .num.blue { color: #2e90fa; }
+  .ring-stat .lbl { font-size: 10px; color: #888; }
+
+  @media (max-width: 1200px) { .row-4 { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 768px) { .row-4, .row-3, .row-2 { grid-template-columns: 1fr; } .group-grid { grid-template-columns: repeat(3, 1fr); } }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <span class="header-badge">S</span>
+    <span class="header-title">재고 현황 / Stock View</span>
+    <span style="font-size:13px;color:#888;" id="total-label">총 5,631 품목</span>
+  </div>
+  <div>
+    <button class="btn" onclick="resetFilters()">Reset</button>
+    <button class="btn" onclick="location.reload()">Refresh</button>
+  </div>
+</div>
+
+<div class="dashboard">
+
+  <!-- KPI Summary -->
+  <div class="row row-4">
+    <div class="card" style="display:flex;align-items:center;gap:12px;">
+      <div class="ring-wrap"><canvas id="ring-active" width="70" height="70"></canvas><div class="ring-center"><span class="pct" style="font-size:16px;color:#12b76a">22%</span></div></div>
+      <div><div style="font-size:26px;font-weight:800;color:#12b76a;">1,255</div><div style="font-size:11px;color:#888;">활성 품목 / Active</div></div>
+    </div>
+    <div class="card" style="display:flex;align-items:center;gap:12px;">
+      <div class="ring-wrap"><canvas id="ring-stock" width="70" height="70"></canvas><div class="ring-center"><span class="pct" style="font-size:16px;color:#2e90fa">97%</span></div></div>
+      <div><div style="font-size:26px;font-weight:800;color:#2e90fa;">1,211</div><div style="font-size:11px;color:#888;">재고있음 / In Stock</div></div>
+    </div>
+    <div class="card" style="text-align:center;">
+      <div style="font-size:11px;color:#888;margin-bottom:4px;">총 재고수량 / Total Qty</div>
+      <div style="font-size:30px;font-weight:800;color:#5b5fc7;">21,862,961</div>
+      <div style="font-size:11px;color:#888;">pcs across all locations</div>
+    </div>
+    <div class="card" style="text-align:center;">
+      <div style="font-size:11px;color:#888;margin-bottom:4px;">Sin Existencia / 품절</div>
+      <div style="font-size:30px;font-weight:800;color:#f79009;">834</div>
+      <div style="font-size:11px;color:#888;">sold out (inactive)</div>
+    </div>
+  </div>
+
+  <!-- Category Chips -->
+  <div class="card">
+    <div class="card-title"><span>📦</span> 카테고리 선택 / Select Category</div>
+    <div class="group-grid" id="group-grid">
+      <!-- filled by JS -->
+    </div>
+  </div>
+
+  <!-- Filters + Table -->
+  <div class="card" style="margin-top:16px;">
+    <div class="filters">
+      <input type="text" class="filter-input" id="search-input" placeholder="🔍 SKU, 품목명, Brand 검색..." oninput="filterTable()">
+      <select class="filter-select" id="filter-group" onchange="filterTable()">
+        <option value="">All Category</option>
+      </select>
+      <select class="filter-select" id="filter-status" onchange="filterTable()">
+        <option value="">All Status</option>
+        <option value="Active">Active</option>
+        <option value="Sin Existencia">Sin Existencia</option>
+        <option value="Archived">Archived</option>
+      </select>
+      <span class="filter-count" id="filter-count"></span>
+    </div>
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th>Item Name / SKU</th>
+            <th>Category</th>
+            <th>Division</th>
+            <th style="text-align:right">Selling Price</th>
+            <th style="text-align:right">Precio Antes</th>
+            <th style="text-align:right">Stock On Hand</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="items-tbody">
+          <!-- filled by JS -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const IS_ZOHO = (typeof ZOHO !== 'undefined');
+
+const CATEGORIES = [
+  { name: 'SWTOP', count: 1512, label: '봉제 상의' },
+  { name: 'SWBOT', count: 1270, label: '봉제 하의' },
+  { name: 'ETC',   count: 1116, label: '기타' },
+  { name: 'SMTOP', count: 573,  label: '심리스 상의' },
+  { name: 'SMBOT', count: 355,  label: '심리스 하의' },
+  { name: 'SPORT', count: 235,  label: '스포츠' },
+  { name: 'SPL',   count: 148,  label: 'SPL/SPR' },
+  { name: 'HD',    count: 123,  label: '봉제준기본' },
+  { name: 'WT',    count: 115,  label: 'NAIKI/WT' },
+  { name: 'BEACH', count: 15,   label: '비치웨어' },
+  { name: 'BIG5',  count: 14,   label: '기본' },
+  { name: 'N',     count: 11,   label: '기본' },
+  { name: 'STK',   count: 10,   label: '스타킹' },
+  { name: 'RL',    count: 9,    label: '기본' },
+  { name: 'KIM',   count: 7,    label: '기본' },
+  { name: 'SEMI',  count: 5,    label: '기타 심리스' },
+];
+
+// Sample items for standalone testing
+const SAMPLE_ITEMS = [
+  { name: 'BL101', group: 'SWTOP', division: '봉제', price: 85, priceBefore: 95, stock: 12400, status: 'Active' },
+  { name: 'CRC205', group: 'SWTOP', division: '봉제', price: 92, priceBefore: 102, stock: 8750, status: 'Active' },
+  { name: 'MC310', group: 'SWTOP', division: '봉제', price: 78, priceBefore: 88, stock: 6100, status: 'Active' },
+  { name: 'TCHU44', group: 'SWBOT', division: '봉제', price: 78, priceBefore: 85, stock: 6200, status: 'Active' },
+  { name: 'DPP12', group: 'SWBOT', division: '봉제', price: 65, priceBefore: 72, stock: 4300, status: 'Active' },
+  { name: 'ZT88', group: 'SWBOT', division: '봉제', price: 70, priceBefore: 80, stock: 3800, status: 'Active' },
+  { name: 'SUM18', group: 'SMTOP', division: '심리스', price: 45, priceBefore: 52, stock: 15300, status: 'Active' },
+  { name: 'ENTOP5', group: 'SMTOP', division: '심리스', price: 42, priceBefore: 48, stock: 9200, status: 'Active' },
+  { name: 'NVES3', group: 'SMTOP', division: '심리스', price: 38, priceBefore: 44, stock: 7600, status: 'Active' },
+  { name: 'PLSET1', group: 'SMBOT', division: '심리스', price: 55, priceBefore: 62, stock: 5100, status: 'Active' },
+  { name: 'SP301', group: 'SPORT', division: '스포츠', price: 110, priceBefore: 125, stock: 3100, status: 'Active' },
+  { name: 'SP402', group: 'SPORT', division: '스포츠', price: 95, priceBefore: 108, stock: 2400, status: 'Active' },
+  { name: 'KIM1', group: 'KIM', division: '기본', price: 42, priceBefore: 48, stock: 28000, status: 'Active' },
+  { name: 'BIG5-1', group: 'BIG5', division: '기본', price: 38, priceBefore: 42, stock: 45000, status: 'Active' },
+  { name: 'N101', group: 'N', division: '기본', price: 35, priceBefore: 40, stock: 32000, status: 'Active' },
+  { name: 'HD50', group: 'HD', division: '봉제준기본', price: 68, priceBefore: 75, stock: 8900, status: 'Active' },
+  { name: 'WT22', group: 'WT', division: 'NAIKI', price: 55, priceBefore: 62, stock: 11200, status: 'Active' },
+  { name: 'BCF10', group: 'BEACH', division: '비치', price: 85, priceBefore: 95, stock: 1200, status: 'Active' },
+  { name: 'NNIT5', group: 'ETC', division: '니트', price: 72, priceBefore: 82, stock: 4500, status: 'Active' },
+  { name: 'NANG2', group: 'ETC', division: '내복', price: 48, priceBefore: 55, stock: 0, status: 'Sin Existencia' },
+  { name: 'SUV8', group: 'ETC', division: '수면', price: 62, priceBefore: 70, stock: 0, status: 'Sin Existencia' },
+  { name: 'OLD001', group: 'ETC', division: '기타', price: 30, priceBefore: 38, stock: 0, status: 'Archived' },
+  { name: 'OLD002', group: 'SWTOP', division: '봉제', price: 55, priceBefore: 65, stock: 0, status: 'Archived' },
+  { name: 'STK3', group: 'STK', division: '스타킹', price: 25, priceBefore: 30, stock: 18500, status: 'Active' },
+  { name: 'SPL15', group: 'SPL', division: 'SPL', price: 58, priceBefore: 65, stock: 7200, status: 'Active' },
+];
+
+let allItems = [];
+let activeGroup = '';
+
+async function init() {
+  if (IS_ZOHO) {
+    try {
+      await ZOHO.CREATOR.init();
+      allItems = await fetchItems();
+    } catch(e) {
+      console.warn('Using sample data', e);
+      allItems = SAMPLE_ITEMS;
+    }
+  } else {
+    allItems = SAMPLE_ITEMS;
+  }
+  renderGroupChips();
+  renderRings();
+  populateGroupFilter();
+  filterTable();
+}
+
+async function fetchItems() {
+  // Fetch from Inventory API - paginated
+  let items = [];
+  let page = 1;
+  try {
+    while (page <= 5) { // max 5 pages = 1000 items for performance
+      const resp = await ZOHO.CREATOR.UTIL.invokeURL({
+        url: `https://www.zohoapis.com/inventory/v1/items?organization_id=908736065&per_page=200&page=${page}&status=active`,
+        type: 'GET',
+        connectionLinkName: 'inventory_connection'
+      });
+      if (!resp || !resp.items || resp.items.length === 0) break;
+      resp.items.forEach(it => {
+        items.push({
+          name: it.name || it.sku,
+          group: it.cf_division_2 || 'ETC',
+          division: it.cf_subcategoria_1 || '',
+          price: it.rate || 0,
+          priceBefore: it.cf_precio_antes || 0,
+          stock: it.stock_on_hand || 0,
+          status: it.status === 'active' ? 'Active' : 'Inactive'
+        });
+      });
+      if (!resp.page_context || !resp.page_context.has_more_page) break;
+      page++;
+    }
+  } catch(e) { console.warn('Fetch failed', e); }
+  return items.length > 0 ? items : SAMPLE_ITEMS;
+}
+
+function renderGroupChips() {
+  const grid = document.getElementById('group-grid');
+  grid.innerHTML = CATEGORIES.map(c =>
+    `<div class="group-chip" onclick="toggleGroup('${c.name}')" id="chip-${c.name}">
+      <div class="g-name">${c.name}</div>
+      <div class="g-count">${c.count.toLocaleString()}</div>
+      <div class="g-label">${c.label}</div>
+    </div>`
+  ).join('');
+}
+
+function toggleGroup(name) {
+  if (activeGroup === name) {
+    activeGroup = '';
+    document.querySelectorAll('.group-chip').forEach(c => c.classList.remove('active'));
+  } else {
+    activeGroup = name;
+    document.querySelectorAll('.group-chip').forEach(c => c.classList.remove('active'));
+    document.getElementById('chip-' + name)?.classList.add('active');
+  }
+  document.getElementById('filter-group').value = activeGroup;
+  filterTable();
+}
+
+function renderRings() {
+  new Chart(document.getElementById('ring-active'), {
+    type: 'doughnut',
+    data: { datasets: [{ data: [22, 78], backgroundColor: ['#12b76a', '#f2f4f7'], borderWidth: 0 }] },
+    options: { cutout: '75%', plugins: { legend: { display: false }, tooltip: { enabled: false } }, responsive: false }
+  });
+  new Chart(document.getElementById('ring-stock'), {
+    type: 'doughnut',
+    data: { datasets: [{ data: [97, 3], backgroundColor: ['#2e90fa', '#f2f4f7'], borderWidth: 0 }] },
+    options: { cutout: '75%', plugins: { legend: { display: false }, tooltip: { enabled: false } }, responsive: false }
+  });
+}
+
+function populateGroupFilter() {
+  const sel = document.getElementById('filter-group');
+  CATEGORIES.forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c.name;
+    opt.textContent = `${c.name} (${c.label})`;
+    sel.appendChild(opt);
+  });
+}
+
+function filterTable() {
+  const search = document.getElementById('search-input').value.toLowerCase();
+  const group = document.getElementById('filter-group').value;
+  const status = document.getElementById('filter-status').value;
+
+  const filtered = allItems.filter(item => {
+    if (search && !item.name.toLowerCase().includes(search) && !item.group.toLowerCase().includes(search)) return false;
+    if (group && item.group !== group) return false;
+    if (status && item.status !== status) return false;
+    return true;
+  });
+
+  document.getElementById('filter-count').textContent = `${filtered.length} items`;
+
+  const tbody = document.getElementById('items-tbody');
+  tbody.innerHTML = filtered.map(item => {
+    const statusClass = item.status === 'Active' ? 'badge-green' : item.status === 'Sin Existencia' ? 'badge-orange' : 'badge-gray';
+    return `<tr>
+      <td><strong>${item.name}</strong></td>
+      <td>${item.group}</td>
+      <td>${item.division}</td>
+      <td class="num">$${(item.price || 0).toLocaleString(undefined, {minimumFractionDigits:2})}</td>
+      <td class="num" style="color:#888">$${(item.priceBefore || 0).toLocaleString(undefined, {minimumFractionDigits:2})}</td>
+      <td class="num" style="font-weight:700;${item.stock > 0 ? 'color:#12b76a' : 'color:#f04438'}">${(item.stock || 0).toLocaleString()}</td>
+      <td><span class="badge ${statusClass}">${item.status}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+function resetFilters() {
+  document.getElementById('search-input').value = '';
+  document.getElementById('filter-group').value = '';
+  document.getElementById('filter-status').value = '';
+  activeGroup = '';
+  document.querySelectorAll('.group-chip').forEach(c => c.classList.remove('active'));
+  filterTable();
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
