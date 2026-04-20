@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JERA MODA - Overview / 전체현황</title>
+<script src="https://js.zohostatic.com/creator/widgets/1.0.0/sdk.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; background: #f5f6fa; color: #333; }
+
+  /* ── HEADER ── */
+  .header { display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; background: #fff; border-bottom: 1px solid #e8e8e8; }
+  .header-left { display: flex; align-items: center; gap: 10px; }
+  .header-badge { background: #5b5fc7; color: #fff; font-weight: 800; font-size: 13px; padding: 4px 10px; border-radius: 6px; }
+  .header-title { font-size: 18px; font-weight: 700; color: #222; }
+  .header-sub { font-size: 13px; color: #888; margin-left: 4px; }
+  .header-right { display: flex; gap: 8px; }
+  .btn { padding: 8px 16px; border-radius: 8px; border: 1px solid #d0d5dd; background: #fff; font-size: 13px; font-weight: 600; cursor: pointer; color: #344054; transition: all 0.15s; }
+  .btn:hover { background: #f5f5f5; }
+  .btn-primary { background: #5b5fc7; color: #fff; border-color: #5b5fc7; }
+  .btn-primary:hover { background: #4a4eb3; }
+
+  /* ── LAYOUT ── */
+  .dashboard { padding: 20px 24px; }
+  .row { display: grid; gap: 16px; margin-bottom: 16px; }
+  .row-4 { grid-template-columns: repeat(4, 1fr); }
+  .row-3 { grid-template-columns: repeat(3, 1fr); }
+  .row-2 { grid-template-columns: repeat(2, 1fr); }
+  .row-1-2 { grid-template-columns: 1fr 2fr; }
+  .row-2-1 { grid-template-columns: 2fr 1fr; }
+
+  /* ── CARD ── */
+  .card { background: #fff; border-radius: 12px; border: 1px solid #e8e8e8; padding: 20px; }
+  .card-title { font-size: 13px; font-weight: 700; color: #555; margin-bottom: 14px; display: flex; align-items: center; gap: 6px; }
+  .card-title .icon { font-size: 16px; }
+
+  /* ── KPI BIG NUMBER ── */
+  .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .kpi-box { text-align: center; padding: 16px 8px; background: #fafbff; border-radius: 10px; border: 1px solid #eef0f8; }
+  .kpi-num { font-size: 28px; font-weight: 800; color: #5b5fc7; }
+  .kpi-num.green { color: #12b76a; }
+  .kpi-num.orange { color: #f79009; }
+  .kpi-num.red { color: #f04438; }
+  .kpi-num.blue { color: #2e90fa; }
+  .kpi-label { font-size: 11px; color: #888; margin-top: 4px; line-height: 1.3; }
+
+  /* ── DONUT CENTER ── */
+  .donut-wrap { position: relative; width: 160px; height: 160px; margin: 0 auto; }
+  .donut-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; }
+  .donut-center .pct { font-size: 24px; font-weight: 800; }
+  .donut-center .pct-label { font-size: 10px; color: #888; }
+
+  /* ── PROGRESS RING ── */
+  .ring-card { display: flex; align-items: center; gap: 20px; }
+  .ring-wrap { position: relative; flex-shrink: 0; }
+  .ring-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; }
+  .ring-center .pct { font-size: 18px; font-weight: 800; }
+  .ring-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; flex: 1; }
+  .ring-stat { text-align: center; }
+  .ring-stat .num { font-size: 22px; font-weight: 800; }
+  .ring-stat .num.green { color: #12b76a; }
+  .ring-stat .num.red { color: #f04438; }
+  .ring-stat .num.blue { color: #2e90fa; }
+  .ring-stat .num.orange { color: #f79009; }
+  .ring-stat .lbl { font-size: 10px; color: #888; line-height: 1.3; }
+
+  /* ── MONTH KPI CARDS ── */
+  .month-card { border: 2px solid #e8e8e8; border-radius: 12px; padding: 16px; }
+  .month-card.active { border-color: #5b5fc7; background: #fafbff; }
+  .month-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .month-label { font-size: 13px; font-weight: 700; color: #222; }
+  .month-badge { font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: 600; }
+  .month-badge.green { background: #ecfdf3; color: #027a48; }
+  .month-badge.blue { background: #eff8ff; color: #175cd3; }
+
+  /* ── TABLE ── */
+  .tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .tbl th { text-align: left; padding: 10px 12px; background: #f9fafb; color: #667085; font-weight: 600; font-size: 11px; text-transform: uppercase; border-bottom: 1px solid #eaecf0; }
+  .tbl td { padding: 10px 12px; border-bottom: 1px solid #f2f4f7; }
+  .tbl tr:hover td { background: #f9fafb; }
+  .badge { display: inline-block; padding: 2px 10px; border-radius: 16px; font-size: 11px; font-weight: 600; }
+  .badge-green { background: #ecfdf3; color: #027a48; }
+  .badge-blue { background: #eff8ff; color: #175cd3; }
+  .badge-orange { background: #fffaeb; color: #b54708; }
+  .badge-red { background: #fef3f2; color: #b42318; }
+  .badge-gray { background: #f2f4f7; color: #344054; }
+
+  /* ── PLAN vs ACTUAL BAR ── */
+  .plan-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; font-size: 12px; }
+  .plan-label { width: 50px; font-weight: 600; color: #555; text-align: right; }
+  .plan-bar-wrap { flex: 1; height: 20px; background: #f2f4f7; border-radius: 6px; overflow: hidden; position: relative; }
+  .plan-bar { height: 100%; border-radius: 6px; transition: width 0.5s ease; }
+  .plan-bar.plan { background: #d0d5ff; }
+  .plan-bar.actual { background: #5b5fc7; }
+  .plan-val { width: 70px; font-weight: 700; color: #333; font-size: 12px; }
+
+  /* ── ALERT BOX ── */
+  .alert-box { background: #fef3f2; border: 2px solid #fecdca; border-radius: 12px; padding: 16px; text-align: center; }
+  .alert-title { font-size: 13px; font-weight: 700; color: #b42318; margin-bottom: 8px; }
+  .alert-num { font-size: 36px; font-weight: 800; color: #f04438; }
+  .alert-sub { font-size: 11px; color: #912018; margin-top: 4px; }
+  .alert-ok { background: #ecfdf3; border-color: #a6f4c5; }
+  .alert-ok .alert-title { color: #027a48; }
+  .alert-ok .alert-num { color: #12b76a; }
+  .alert-ok .alert-sub { color: #05603a; }
+
+  /* ── LEGEND ── */
+  .legend { display: flex; gap: 16px; margin-top: 10px; font-size: 11px; color: #667085; }
+  .legend-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 4px; vertical-align: middle; }
+
+  /* ── FILTERS ── */
+  .filters { display: flex; gap: 10px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
+  .filter-input { padding: 8px 12px; border: 1px solid #d0d5dd; border-radius: 8px; font-size: 13px; min-width: 180px; }
+  .filter-select { padding: 8px 12px; border: 1px solid #d0d5dd; border-radius: 8px; font-size: 13px; background: #fff; }
+
+  /* ── LOADING ── */
+  .loading { text-align: center; padding: 60px 20px; color: #888; }
+  .spinner { display: inline-block; width: 32px; height: 32px; border: 3px solid #e8e8e8; border-top-color: #5b5fc7; border-radius: 50%; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 1200px) { .row-4 { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 768px) { .row-4, .row-3, .row-2, .row-1-2, .row-2-1 { grid-template-columns: 1fr; } .kpi-grid { grid-template-columns: repeat(2, 1fr); } }
+</style>
+</head>
+<body>
+
+<!-- ═══════════ HEADER ═══════════ -->
+<div class="header">
+  <div class="header-left">
+    <span class="header-badge">OV</span>
+    <span class="header-title">전체현황 / Overview</span>
+  </div>
+  <div class="header-right">
+    <button class="btn" onclick="refreshData()">Refresh</button>
+  </div>
+</div>
+
+<!-- ═══════════ DASHBOARD ═══════════ -->
+<div class="dashboard">
+
+  <!-- ROW 1: Top KPI Numbers -->
+  <div class="row row-4" id="kpi-section">
+    <div class="card">
+      <div class="card-title"><span class="icon">📦</span> 재고 현황 / Stock</div>
+      <div class="kpi-grid" style="grid-template-columns: 1fr 1fr;">
+        <div class="kpi-box"><div class="kpi-num blue" id="kpi-active">—</div><div class="kpi-label">활성 품목<br>Active Items</div></div>
+        <div class="kpi-box"><div class="kpi-num green" id="kpi-stock">—</div><div class="kpi-label">재고있는 SKU<br>In-Stock SKUs</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="icon">💰</span> 매출 현황 / Sales</div>
+      <div class="kpi-grid" style="grid-template-columns: 1fr 1fr;">
+        <div class="kpi-box"><div class="kpi-num" id="kpi-orders">—</div><div class="kpi-label">총 주문<br>Total Orders</div></div>
+        <div class="kpi-box"><div class="kpi-num blue" id="kpi-customers">—</div><div class="kpi-label">고객수<br>Customers</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="icon">📊</span> 카테고리 / Categories</div>
+      <div class="kpi-grid" style="grid-template-columns: 1fr 1fr;">
+        <div class="kpi-box"><div class="kpi-num" id="kpi-groups">16</div><div class="kpi-label">품목 그룹<br>Item Groups</div></div>
+        <div class="kpi-box"><div class="kpi-num blue" id="kpi-locations">5</div><div class="kpi-label">창고 위치<br>Locations</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="icon">🚚</span> 물류 / Logistics</div>
+      <div class="kpi-grid" style="grid-template-columns: 1fr 1fr;">
+        <div class="kpi-box"><div class="kpi-num" id="kpi-carriers">7</div><div class="kpi-label">운송업체<br>Carriers</div></div>
+        <div class="kpi-box"><div class="kpi-num" id="kpi-vendors">43</div><div class="kpi-label">공급업체<br>Vendors</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW 2: Category Distribution + Order Health + Alerts -->
+  <div class="row row-3">
+    <!-- Category Donut -->
+    <div class="card">
+      <div class="card-title"><span class="icon">🎯</span> 카테고리별 비율 / Category Distribution</div>
+      <div class="donut-wrap">
+        <canvas id="chart-category"></canvas>
+        <div class="donut-center">
+          <div class="pct" id="cat-total">5,631</div>
+          <div class="pct-label">총 품목</div>
+        </div>
+      </div>
+      <div class="legend" style="justify-content:center; flex-wrap:wrap; margin-top:14px;">
+        <span><span class="legend-dot" style="background:#5b5fc7"></span>SWTOP 27%</span>
+        <span><span class="legend-dot" style="background:#7c80e0"></span>SWBOT 23%</span>
+        <span><span class="legend-dot" style="background:#f79009"></span>ETC 20%</span>
+        <span><span class="legend-dot" style="background:#2e90fa"></span>SMTOP 10%</span>
+        <span><span class="legend-dot" style="background:#12b76a"></span>기타 20%</span>
+      </div>
+    </div>
+
+    <!-- Item Status Donut -->
+    <div class="card">
+      <div class="card-title"><span class="icon">📋</span> 품목 상태 / Item Status</div>
+      <div class="donut-wrap">
+        <canvas id="chart-status"></canvas>
+        <div class="donut-center">
+          <div class="pct" id="status-pct">22%</div>
+          <div class="pct-label">활성 비율</div>
+        </div>
+      </div>
+      <div class="legend" style="justify-content:center; flex-wrap:wrap; margin-top:14px;">
+        <span><span class="legend-dot" style="background:#12b76a"></span>Active 1,255</span>
+        <span><span class="legend-dot" style="background:#f79009"></span>Sin Existencia 834</span>
+        <span><span class="legend-dot" style="background:#d0d5dd"></span>Archived 3,542</span>
+      </div>
+    </div>
+
+    <!-- Delay Alert -->
+    <div class="card" style="display:flex; flex-direction:column; gap:12px;">
+      <div class="card-title"><span class="icon">⚠️</span> 시스템 알림 / System Alerts</div>
+      <div class="alert-ok">
+        <div class="alert-title">지연 없음 / No Delays</div>
+        <div class="alert-num">0</div>
+        <div class="alert-sub">건 지연 /件延误</div>
+      </div>
+      <div style="font-size:12px; color:#667085; text-align:center; padding:8px;">
+        <strong>대기중 항목 / Pending Items:</strong><br>
+        83 missing SKUs (go-live 시 처리)<br>
+        Image migration (China team 대기)
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW 3: Monthly KPI Cards -->
+  <div class="card" style="margin-bottom:16px;">
+    <div class="card-title"><span class="icon">📅</span> 월별 KPI / Monthly KPIs</div>
+    <div class="row row-3" style="margin-bottom:0;">
+
+      <!-- Current Month -->
+      <div class="month-card active">
+        <div class="month-header">
+          <span class="month-label" id="month-cur-label">26.04 KPI / 4월</span>
+          <span class="month-badge green">Current</span>
+        </div>
+        <div class="ring-card">
+          <div class="ring-wrap">
+            <canvas id="ring-cur" width="80" height="80"></canvas>
+            <div class="ring-center"><span class="pct" id="ring-cur-pct">—</span></div>
+          </div>
+          <div class="ring-stats">
+            <div class="ring-stat"><div class="num blue" id="m-cur-orders">—</div><div class="lbl">총 주문<br>Orders</div></div>
+            <div class="ring-stat"><div class="num green" id="m-cur-confirmed">—</div><div class="lbl">확정<br>Confirmed</div></div>
+            <div class="ring-stat"><div class="num orange" id="m-cur-pending">—</div><div class="lbl">대기<br>Pending</div></div>
+            <div class="ring-stat"><div class="num red" id="m-cur-draft">—</div><div class="lbl">임시<br>Draft</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Previous Month -->
+      <div class="month-card">
+        <div class="month-header">
+          <span class="month-label" id="month-prev-label">26.03 KPI / 3월</span>
+          <span class="month-badge blue">Previous</span>
+        </div>
+        <div class="ring-card">
+          <div class="ring-wrap">
+            <canvas id="ring-prev" width="80" height="80"></canvas>
+            <div class="ring-center"><span class="pct" id="ring-prev-pct">—</span></div>
+          </div>
+          <div class="ring-stats">
+            <div class="ring-stat"><div class="num blue" id="m-prev-orders">—</div><div class="lbl">총 주문<br>Orders</div></div>
+            <div class="ring-stat"><div class="num green" id="m-prev-confirmed">—</div><div class="lbl">확정<br>Confirmed</div></div>
+            <div class="ring-stat"><div class="num orange" id="m-prev-pending">—</div><div class="lbl">대기<br>Pending</div></div>
+            <div class="ring-stat"><div class="num red" id="m-prev-draft">—</div><div class="lbl">임시<br>Draft</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Next Month -->
+      <div class="month-card">
+        <div class="month-header">
+          <span class="month-label" id="month-next-label">26.05 KPI / 5월</span>
+          <span class="month-badge blue">Next</span>
+        </div>
+        <div class="ring-card">
+          <div class="ring-wrap">
+            <canvas id="ring-next" width="80" height="80"></canvas>
+            <div class="ring-center"><span class="pct" id="ring-next-pct">—</span></div>
+          </div>
+          <div class="ring-stats">
+            <div class="ring-stat"><div class="num blue" id="m-next-orders">—</div><div class="lbl">총 주문<br>Orders</div></div>
+            <div class="ring-stat"><div class="num green" id="m-next-confirmed">—</div><div class="lbl">확정<br>Confirmed</div></div>
+            <div class="ring-stat"><div class="num orange" id="m-next-pending">—</div><div class="lbl">대기<br>Pending</div></div>
+            <div class="ring-stat"><div class="num red" id="m-next-draft">—</div><div class="lbl">임시<br>Draft</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW 4: Top Categories Table + Plan vs Actual -->
+  <div class="row row-2">
+    <!-- Top Categories -->
+    <div class="card">
+      <div class="card-title"><span class="icon">📊</span> 카테고리별 재고 / Stock by Category</div>
+      <table class="tbl">
+        <thead>
+          <tr><th>Group</th><th>품목수 / Items</th><th>비율 / %</th><th>Status</th></tr>
+        </thead>
+        <tbody id="cat-table-body">
+          <!-- filled by JS -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Plan vs Actual -->
+    <div class="card">
+      <div class="card-title"><span class="icon">📈</span> Plan vs Actual / 계획 대비 실적</div>
+      <div id="plan-bars">
+        <!-- filled by JS -->
+      </div>
+      <div class="legend" style="margin-top:16px;">
+        <span><span class="legend-dot" style="background:#d0d5ff"></span>Plan 계획수량</span>
+        <span><span class="legend-dot" style="background:#5b5fc7"></span>Actual 실적수량</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ══════════════════════════════════════════
+// JERA MODA - Overview Widget
+// ══════════════════════════════════════════
+// This widget works in two modes:
+// 1. INSIDE Zoho Creator: uses ZOHO.CREATOR.API to fetch live data
+// 2. STANDALONE (for testing): uses sample data below
+// ══════════════════════════════════════════
+
+const IS_ZOHO = (typeof ZOHO !== 'undefined');
+
+// ── CATEGORY DATA (from 재고체크 mapping) ──
+const CATEGORIES = [
+  { name: 'SWTOP', count: 1512, label: '봉제 상의', color: '#5b5fc7' },
+  { name: 'SWBOT', count: 1270, label: '봉제 하의', color: '#7c80e0' },
+  { name: 'ETC',   count: 1116, label: '기타',      color: '#f79009' },
+  { name: 'SMTOP', count: 573,  label: '심리스 상의', color: '#2e90fa' },
+  { name: 'SMBOT', count: 355,  label: '심리스 하의', color: '#36bffa' },
+  { name: 'SPORT', count: 235,  label: '스포츠',     color: '#12b76a' },
+  { name: 'SPL',   count: 148,  label: 'SPL/SPR',   color: '#f04438' },
+  { name: 'HD',    count: 123,  label: '봉제준기본',  color: '#7a5af8' },
+  { name: 'WT',    count: 115,  label: 'NAIKI/WT',  color: '#ee46bc' },
+  { name: 'BEACH', count: 15,   label: '비치웨어',    color: '#0ba5ec' },
+  { name: 'BIG5',  count: 14,   label: '기본/심리스',  color: '#667085' },
+  { name: 'N',     count: 11,   label: '기본/심리스',  color: '#98a2b3' },
+  { name: 'STK',   count: 10,   label: '스타킹',     color: '#d6bbfb' },
+  { name: 'RL',    count: 9,    label: '기본/심리스',  color: '#fdb022' },
+  { name: 'KIM',   count: 7,    label: '기본/심리스',  color: '#a6f4c5' },
+  { name: 'SEMI',  count: 5,    label: '기타 심리스',  color: '#fecdca' },
+];
+
+// ── SAMPLE DATA (used when not inside Zoho) ──
+const SAMPLE = {
+  activeItems: 1255,
+  inStockSKUs: 1211,
+  totalOrders: 10220,
+  customers: 31,
+  groups: 16,
+  locations: 5,
+  carriers: 7,
+  vendors: 43,
+  monthlyOrders: {
+    current:  { total: 0, confirmed: 0, pending: 0, draft: 0 },
+    previous: { total: 0, confirmed: 0, pending: 0, draft: 0 },
+    next:     { total: 0, confirmed: 0, pending: 0, draft: 0 }
+  },
+  planVsActual: [
+    { month: '1월', plan: 5200, actual: 4800 },
+    { month: '2월', plan: 4800, actual: 4600 },
+    { month: '3월', plan: 6100, actual: 5400 },
+    { month: '4월', plan: 5500, actual: 0 },
+  ]
+};
+
+// ══════════ INITIALIZATION ══════════
+let DATA = {};
+
+async function init() {
+  if (IS_ZOHO) {
+    try {
+      await ZOHO.CREATOR.init();
+      DATA = await fetchZohoData();
+    } catch(e) {
+      console.warn('Zoho SDK init failed, using sample data', e);
+      DATA = SAMPLE;
+    }
+  } else {
+    DATA = SAMPLE;
+  }
+  renderAll();
+}
+
+// ── ZOHO DATA FETCH ──
+async function fetchZohoData() {
+  const data = { ...SAMPLE }; // start with defaults
+
+  try {
+    // Fetch items summary from Inventory API
+    const itemsResp = await ZOHO.CREATOR.UTIL.invokeURL({
+      url: 'https://www.zohoapis.com/inventory/v1/items?organization_id=908736065&per_page=1&filter_by=Status.Active',
+      type: 'GET',
+      connectionLinkName: 'inventory_connection'
+    });
+    if (itemsResp && itemsResp.page_context) {
+      data.activeItems = itemsResp.page_context.total || data.activeItems;
+    }
+  } catch(e) { console.warn('Items fetch failed', e); }
+
+  try {
+    // Fetch sales orders
+    const soResp = await ZOHO.CREATOR.UTIL.invokeURL({
+      url: 'https://www.zohoapis.com/inventory/v1/salesorders?organization_id=908736065&per_page=1',
+      type: 'GET',
+      connectionLinkName: 'inventory_connection'
+    });
+    if (soResp && soResp.page_context) {
+      data.totalOrders = soResp.page_context.total || data.totalOrders;
+    }
+  } catch(e) { console.warn('SO fetch failed', e); }
+
+  try {
+    // Fetch customers
+    const custResp = await ZOHO.CREATOR.UTIL.invokeURL({
+      url: 'https://www.zohoapis.com/inventory/v1/contacts?organization_id=908736065&per_page=1&contact_type=customer',
+      type: 'GET',
+      connectionLinkName: 'inventory_connection'
+    });
+    if (custResp && custResp.page_context) {
+      data.customers = custResp.page_context.total || data.customers;
+    }
+  } catch(e) { console.warn('Customer fetch failed', e); }
+
+  return data;
+}
+
+// ══════════ RENDER ══════════
+function renderAll() {
+  renderKPIs();
+  renderCategoryDonut();
+  renderStatusDonut();
+  renderMonthlyKPIs();
+  renderCategoryTable();
+  renderPlanVsActual();
+}
+
+function renderKPIs() {
+  setText('kpi-active', fmtNum(DATA.activeItems));
+  setText('kpi-stock', fmtNum(DATA.inStockSKUs));
+  setText('kpi-orders', fmtNum(DATA.totalOrders));
+  setText('kpi-customers', fmtNum(DATA.customers));
+  setText('kpi-groups', fmtNum(DATA.groups || 16));
+  setText('kpi-locations', fmtNum(DATA.locations || 5));
+  setText('kpi-carriers', fmtNum(DATA.carriers || 7));
+  setText('kpi-vendors', fmtNum(DATA.vendors || 43));
+}
+
+function renderCategoryDonut() {
+  const top5 = CATEGORIES.slice(0, 5);
+  const otherCount = CATEGORIES.slice(5).reduce((s, c) => s + c.count, 0);
+  new Chart(document.getElementById('chart-category'), {
+    type: 'doughnut',
+    data: {
+      labels: [...top5.map(c => c.name), '기타'],
+      datasets: [{
+        data: [...top5.map(c => c.count), otherCount],
+        backgroundColor: [...top5.map(c => c.color), '#d0d5dd'],
+        borderWidth: 0
+      }]
+    },
+    options: {
+      cutout: '65%',
+      plugins: { legend: { display: false } },
+      responsive: true,
+      maintainAspectRatio: true
+    }
+  });
+}
+
+function renderStatusDonut() {
+  new Chart(document.getElementById('chart-status'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Active', 'Sin Existencia', 'Archived'],
+      datasets: [{
+        data: [1255, 834, 3542],
+        backgroundColor: ['#12b76a', '#f79009', '#d0d5dd'],
+        borderWidth: 0
+      }]
+    },
+    options: {
+      cutout: '65%',
+      plugins: { legend: { display: false } },
+      responsive: true,
+      maintainAspectRatio: true
+    }
+  });
+}
+
+function renderMonthlyKPIs() {
+  const now = new Date();
+  const months = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+  const curM = now.getMonth();
+  const yr = String(now.getFullYear()).slice(2);
+
+  setText('month-cur-label', `${yr}.${String(curM+1).padStart(2,'0')} KPI / ${months[curM]}`);
+  setText('month-prev-label', `${yr}.${String(curM).padStart(2,'0')} KPI / ${months[curM-1] || '12월'}`);
+  setText('month-next-label', `${yr}.${String(curM+2).padStart(2,'0')} KPI / ${months[curM+1] || '1월'}`);
+
+  const mo = DATA.monthlyOrders || SAMPLE.monthlyOrders;
+
+  renderRing('ring-cur', mo.current);
+  renderRing('ring-prev', mo.previous);
+  renderRing('ring-next', mo.next);
+}
+
+function renderRing(canvasId, mData) {
+  const total = mData.total || 0;
+  const confirmed = mData.confirmed || 0;
+  const pct = total > 0 ? Math.round((confirmed / total) * 100) : 0;
+  const prefix = canvasId.replace('ring-', 'm-');
+
+  setText(prefix + '-orders', fmtNum(total));
+  setText(prefix + '-confirmed', fmtNum(confirmed));
+  setText(prefix + '-pending', fmtNum(mData.pending || 0));
+  setText(prefix + '-draft', fmtNum(mData.draft || 0));
+  setText(canvasId + '-pct', total > 0 ? pct + '%' : '—');
+
+  const color = pct >= 80 ? '#12b76a' : pct >= 40 ? '#f79009' : '#d0d5dd';
+  new Chart(document.getElementById(canvasId), {
+    type: 'doughnut',
+    data: {
+      datasets: [{
+        data: total > 0 ? [pct, 100 - pct] : [0, 100],
+        backgroundColor: [color, '#f2f4f7'],
+        borderWidth: 0
+      }]
+    },
+    options: {
+      cutout: '75%',
+      plugins: { legend: { display: false }, tooltip: { enabled: false } },
+      responsive: false
+    }
+  });
+}
+
+function renderCategoryTable() {
+  const total = CATEGORIES.reduce((s, c) => s + c.count, 0);
+  const tbody = document.getElementById('cat-table-body');
+  tbody.innerHTML = CATEGORIES.map(c => {
+    const pct = ((c.count / total) * 100).toFixed(1);
+    const badge = c.count > 500 ? 'badge-green' : c.count > 100 ? 'badge-blue' : 'badge-gray';
+    return `<tr>
+      <td><strong>${c.name}</strong> <span style="color:#888;font-size:11px;">${c.label}</span></td>
+      <td>${fmtNum(c.count)}</td>
+      <td>${pct}%</td>
+      <td><span class="badge ${badge}">${c.count > 500 ? 'High' : c.count > 100 ? 'Mid' : 'Low'}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+function renderPlanVsActual() {
+  const container = document.getElementById('plan-bars');
+  const pva = DATA.planVsActual || SAMPLE.planVsActual;
+  const maxVal = Math.max(...pva.map(p => Math.max(p.plan, p.actual)));
+
+  container.innerHTML = pva.map(p => {
+    const planW = maxVal > 0 ? (p.plan / maxVal * 100) : 0;
+    const actW = maxVal > 0 ? (p.actual / maxVal * 100) : 0;
+    return `
+      <div style="margin-bottom:14px;">
+        <div style="font-size:12px;font-weight:700;color:#333;margin-bottom:6px;">${p.month}</div>
+        <div class="plan-row">
+          <div class="plan-label">Plan</div>
+          <div class="plan-bar-wrap"><div class="plan-bar plan" style="width:${planW}%"></div></div>
+          <div class="plan-val">${fmtNum(p.plan)} pcs</div>
+        </div>
+        <div class="plan-row">
+          <div class="plan-label">Actual</div>
+          <div class="plan-bar-wrap"><div class="plan-bar actual" style="width:${actW}%"></div></div>
+          <div class="plan-val">${fmtNum(p.actual)} pcs</div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// ── UTILS ──
+function setText(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = val;
+}
+function fmtNum(n) {
+  return (n || 0).toLocaleString();
+}
+function refreshData() {
+  location.reload();
+}
+
+// ── START ──
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
